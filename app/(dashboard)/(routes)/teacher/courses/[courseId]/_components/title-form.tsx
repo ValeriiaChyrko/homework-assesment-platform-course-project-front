@@ -4,44 +4,56 @@ import * as z from "zod";
 import axios from "axios";
 import {zodResolver} from "@hookform/resolvers/zod";
 import {useForm} from "react-hook-form";
-import {useRouter} from "next/navigation";
 
 import {
     Form,
-    FormControl,
-    FormDescription,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage
-} from "@/components/ui/form";
+    FormControl, FormDescription,
+    FormField, FormItem, FormLabel,
+    FormMessage,
+} from "@/components/ui/form"
 
-import {Button} from "@/components/ui/button";
 import {Input} from "@/components/ui/input";
-import Link from "next/link";
+import {Button} from "@/components/ui/button";
+import {PencilIcon} from "lucide-react";
+import {useState} from "react";
 import toast from "react-hot-toast";
+import {useRouter} from "next/navigation";
+
+interface TitleFormProps {
+    initialData: {
+        title: string;
+    };
+    courseId: string;
+};
 
 const formSchema = z.object({
     title: z.string().min(1, {
-        message: "Необхідно вказати назву",
+        message: "Необхідно вказати назву.",
     }),
 });
 
-const CreatePage = () => {
+export const TitleForm = ({
+    initialData,
+    courseId
+}: TitleFormProps) => {
+    const [isEditing, setEditing] = useState(false);
+
+    const toggleEditing = () => setEditing((current) => !current);
     const router = useRouter();
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            title: "",
-        }
+        defaultValues: initialData
     });
 
     const {isSubmitting, isValid} = form.formState;
+
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try{
-            const response = await axios.post("/api/courses", values);
-            router.push(`/teacher/courses/${response.data.id}`);
-            toast.success("Курс створено успішно.");
+            const response = await axios.patch(`/api/courses/${courseId}`, values);
+            toast.success("Дані оновлено успішно.");
+            toggleEditing();
+            router.refresh();
         } catch (e) {
             toast.error("На жаль, щось пішло не так. Спробуйте, будь ласка, ще раз.");
             console.error(e);
@@ -49,27 +61,36 @@ const CreatePage = () => {
     }
 
     return(
-        <div className="max-w-5xl mx-auto flex items-center justify-center h-full p-6">
-            <div>
-                <h1 className="text-2xl">
-                    Введіть назву курсу
-                </h1>
-                <p className="text-sm text-slay-600">
-                    Як би ви хотіли назвати свій курс? Не хвилюйтеся, ви зможете змінити назву пізніше.
+        <div className="mt-6 border bg-slate-100 rounded-md p-4">
+            <div className="font-medium flex items-center justify-between">
+                Назва курсу
+                <Button onClick={toggleEditing} variant="ghost">
+                    {isEditing ? (
+                        <>Скасувати</>
+                    ) : (
+                        <>
+                            <PencilIcon className="h-4 w-4 mr-1"/>
+                            Змінити назву
+                        </>
+                    )}
+                </Button>
+            </div>
+            {!isEditing && (
+                <p className="text-sm mt-2">
+                    {initialData.title}
                 </p>
+            )}
+            {isEditing && (
                 <Form {...form}>
                     <form
                         onSubmit={form.handleSubmit(onSubmit)}
-                        className="space-y-8 mt-8"
+                        className="space-y-4 mt-4"
                     >
                         <FormField
                             control={form.control}
                             name="title"
                             render={({field}) => (
                                 <FormItem>
-                                    <FormLabel>
-                                        Назва курсу
-                                    </FormLabel>
                                     <FormControl>
                                         <Input
                                             disabled={isSubmitting}
@@ -77,34 +98,23 @@ const CreatePage = () => {
                                             {...field}
                                         />
                                     </FormControl>
-                                    <FormDescription>
-                                        Що саме ви плануєте викладати у межах цього курсу?
-                                    </FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             )}
                         />
                         <div className="flex items-center gap-x-2">
-                            <Link href="/">
-                                <Button
-                                    typeof="button"
-                                    variant="ghost"
-                                >
-                                    Скасувати
-                                </Button>
-                            </Link>
                             <Button
-                                typeof="submit"
                                 disabled={!isValid || isSubmitting}
+                                type="submit"
                             >
-                                Продовжити
+                                Зберегти зміни
                             </Button>
                         </div>
                     </form>
                 </Form>
-            </div>
+            )}
         </div>
     )
 }
 
-export default CreatePage;
+export default TitleForm;
