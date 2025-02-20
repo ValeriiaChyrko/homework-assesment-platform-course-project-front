@@ -15,7 +15,7 @@ import {FileUpload} from "@/components/file-upload";
 interface ImageFormProps {
     initialData: Course;
     courseId: string;
-};
+}
 
 const formSchema = z.object({
     imageUrl: z.string().min(1, {
@@ -23,10 +23,11 @@ const formSchema = z.object({
     }),
 });
 
-export const ImageForm = ({
+const ImageForm = ({
     initialData,
     courseId
 }: ImageFormProps) => {
+
     const [isEditing, setEditing] = useState(false);
 
     const toggleEditing = () => setEditing((current) => !current);
@@ -34,7 +35,7 @@ export const ImageForm = ({
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try{
-            const response = await axios.patch(`/api/courses/${courseId}`, values);
+            await axios.patch(`/api/courses/${courseId}`, values);
             toast.success("Дані оновлено успішно.");
             toggleEditing();
             router.refresh();
@@ -86,9 +87,9 @@ export const ImageForm = ({
                 <div>
                     <FileUpload
                         endpoint="courseImage"
-                        onChange={(url) => {
+                        onChangeAction={(url?: string) => {
                             if (url) {
-                                onSubmit({imageUrl: url});
+                                onSubmit({ imageUrl: url });
                             }
                         }}
                     />
