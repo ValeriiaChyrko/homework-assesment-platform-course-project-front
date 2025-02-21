@@ -1,12 +1,13 @@
 ﻿import {db} from "@/lib/db";
 import {auth} from "@clerk/nextjs/server";
 import {redirect} from "next/navigation";
-import {LayoutDashboard} from "lucide-react";
+import {LayoutDashboard, ListChecks, File} from "lucide-react";
 import {IconBadge} from "@/components/icon-badge";
 import TitleForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/title-form";
 import DescriptionForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/description-form";
 import ImageForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/image-form";
 import CategoryForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/category-form";
+import AttachmentForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/attachment-form";
 
 const CourseIdPage = async ({
     params
@@ -22,6 +23,13 @@ const CourseIdPage = async ({
     const course = await db.course.findUnique({
         where: {
             id: courseId
+        },
+        include: {
+            attachments: {
+                orderBy: {
+                    createdAt: "desc",
+                }
+            }
         }
     });
     if (!course) {
@@ -85,6 +93,29 @@ const CourseIdPage = async ({
                             label: category.name,
                             value: category.id
                         }))}
+                    />
+                </div>
+                <div className="space-y-6">
+                    <div>
+                        <div className="flex items-center gap-x-2">
+                            <IconBadge icon={ListChecks}/>
+                            <h2 className="text-xl">
+                                Секції курсу
+                            </h2>
+                        </div>
+                        <div>
+                            TO DO: Chapters
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-x-2">
+                        <IconBadge icon={File}/>
+                        <h2 className="text-xl">
+                            Вкладення та супровідні файли
+                        </h2>
+                    </div>
+                    <AttachmentForm
+                        initialData={course}
+                        courseId={course.id}
                     />
                 </div>
             </div>
