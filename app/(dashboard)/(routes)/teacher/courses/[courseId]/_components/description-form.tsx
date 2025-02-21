@@ -7,12 +7,12 @@ import {useForm} from "react-hook-form";
 
 import {
     Form,
-    FormControl, FormDescription,
-    FormField, FormItem, FormLabel,
+    FormControl,
+    FormField,
+    FormItem,
     FormMessage,
 } from "@/components/ui/form"
 
-import {Input} from "@/components/ui/input";
 import {Button} from "@/components/ui/button";
 import {PencilIcon} from "lucide-react";
 import {useState} from "react";
@@ -20,13 +20,12 @@ import toast from "react-hot-toast";
 import {useRouter} from "next/navigation";
 import {cn} from "@/lib/utils";
 import {Textarea} from "@/components/ui/textarea";
+import {Course} from "@prisma/client";
 
 interface DescriptionFormProps {
-    initialData: {
-        description: string | null;
-    };
+    initialData: Course;
     courseId: string;
-};
+}
 
 const formSchema = z.object({
     description: z.string().min(1, {
@@ -54,7 +53,7 @@ export const DescriptionForm = ({
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try{
-            const response = await axios.patch(`/api/courses/${courseId}`, values);
+            await axios.patch(`/api/courses/${courseId}`, values);
             toast.success("Дані оновлено успішно.");
             toggleEditing();
             router.refresh();

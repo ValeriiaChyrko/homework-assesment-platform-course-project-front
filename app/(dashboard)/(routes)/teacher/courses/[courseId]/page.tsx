@@ -8,6 +8,7 @@ import DescriptionForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseI
 import ImageForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/image-form";
 import CategoryForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/category-form";
 import AttachmentForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/attachment-form";
+import ChaptersForm from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/_components/chapters-form";
 
 const CourseIdPage = async ({
     params
@@ -22,9 +23,15 @@ const CourseIdPage = async ({
     const { courseId } = await params;
     const course = await db.course.findUnique({
         where: {
-            id: courseId
+            id: courseId,
+            userId: userId
         },
         include: {
+            chapters: {
+                orderBy: {
+                    position: "asc",
+                }
+            },
             attachments: {
                 orderBy: {
                     createdAt: "desc",
@@ -47,6 +54,7 @@ const CourseIdPage = async ({
         course.description,
         course.imageUrl,
         course.categoryId,
+        course.chapters.some(chapter => chapter.isPublished)
     ];
 
     const totalFields = requiredFields.length;
@@ -100,12 +108,13 @@ const CourseIdPage = async ({
                         <div className="flex items-center gap-x-2">
                             <IconBadge icon={ListChecks}/>
                             <h2 className="text-xl">
-                                Секції курсу
+                                Тематичне наповнення курсу
                             </h2>
                         </div>
-                        <div>
-                            TO DO: Chapters
-                        </div>
+                        <ChaptersForm
+                            initialData={course}
+                            courseId={course.id}
+                        />
                     </div>
                     <div className="flex items-center gap-x-2">
                         <IconBadge icon={File}/>

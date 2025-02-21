@@ -1,6 +1,5 @@
 ﻿"use client"
 
-import * as z from "zod";
 import axios from "axios";
 
 import {Button} from "@/components/ui/button";
@@ -10,15 +9,12 @@ import toast from "react-hot-toast";
 import {useRouter} from "next/navigation";
 import {Attachment, Course} from "@prisma/client";
 import {FileUpload} from "@/components/file-upload";
+import {cn} from "@/lib/utils";
 
 interface AttachmentFormProps {
     initialData: Course & { attachments: Attachment[] };
     courseId: string;
 }
-
-const formSchema = z.object({
-    url: z.string().min(1)
-});
 
 const AttachmentForm = ({
     initialData,
@@ -74,12 +70,11 @@ const AttachmentForm = ({
                 </Button>
             </div>
             {!isEditing && (
-                <>
-                    {initialData.attachments.length === 0 && (
-                        <p className="test-sm mt-2 text-slate-500 italic">
-                            Ще не додано жодних файлів
-                        </p>
-                    )}
+                <div className={cn(
+                    "text-sm mt-4",
+                    !initialData.attachments.length && "text-slate-500 italic"
+                )}>
+                    {!initialData.attachments.length && "Ще не додано жодних файлів"}
                     {initialData.attachments.length > 0 && (
                         <div className="space-y-2 mt-4">
                             {initialData.attachments.map((attachment) => (
@@ -108,7 +103,7 @@ const AttachmentForm = ({
                             ))}
                         </div>
                     )}
-                </>
+                </div>
             )}
             {isEditing && (
                 <div>
