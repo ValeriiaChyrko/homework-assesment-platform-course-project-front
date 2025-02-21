@@ -22,6 +22,7 @@ import {Editor} from "@/components/editor";
 import {Chapter} from "@prisma/client";
 import {cn} from "@/lib/utils";
 import {Textarea} from "@/components/ui/textarea";
+import {Preview} from "@/components/preview";
 
 interface ChapterDescriptionFormProps {
     initialData: Chapter;
@@ -80,17 +81,17 @@ export const DescriptionForm = ({
                 </Button>
             </div>
             {!isEditing && (
-                <p className="text-sm mt-2">
-                    {initialData.description}
-                </p>
-            )}
-            {!isEditing && (
-                <p className={cn(
+                <div className={cn(
                     "text-sm mt-2",
                     !initialData.description && "text-slate-500 italic"
                 )}>
-                    {initialData.description || "Без опису"}
-                </p>
+                    {!initialData.description && "Без опису"}
+                    {initialData.description && (
+                        <Preview
+                            value={initialData.description}
+                        />
+                    )}
+                </div>
             )}
             {isEditing && (
                 <Form {...form}>

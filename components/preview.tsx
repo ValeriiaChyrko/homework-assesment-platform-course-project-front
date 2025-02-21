@@ -1,26 +1,20 @@
-﻿"use client"
-
-import dynamic from "next/dynamic";
-
-import "react-quill/dist/quill.bubble.css";
-import {useMemo} from "react";
+﻿import { EditorContent, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
 
 interface PreviewProps {
     value: string;
-};
+}
 
-export const Preview = ({
-    value
-}:PreviewProps) => {
-    const ReactQuill = useMemo(()=> dynamic(() => import("react-quill"), {ssr: false}), []);
+export const Preview = ({ value }: PreviewProps) => {
+    const editor = useEditor({
+        extensions: [StarterKit],
+        content: value,
+        editable: false,
+    });
 
     return (
-        <div className="bg-white">
-            <ReactQuill
-                theme="bubble"
-                value={value}
-                readOnly
-            />
+        <div className="text-sm mt-2">
+            <EditorContent editor={editor} />
         </div>
-    )
-}
+    );
+};
