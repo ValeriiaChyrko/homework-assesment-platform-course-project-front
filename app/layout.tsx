@@ -3,6 +3,7 @@ import {
 } from '@clerk/nextjs'
 import './globals.css'
 import {ToastProvider} from "@/components/providers/toaster-provider";
+import {ConfettiProvider} from "@/components/providers/confetti-provider";
 export default function RootLayout({
     children,
 }: {
@@ -12,6 +13,7 @@ export default function RootLayout({
         <ClerkProvider>
             <html lang="ua">
                 <body>
+                    <ConfettiProvider />
                     <ToastProvider />
                     {children}
                 </body>

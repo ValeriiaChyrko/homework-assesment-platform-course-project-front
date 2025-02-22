@@ -7,33 +7,34 @@ import {useState} from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import {useRouter} from "next/navigation";
+import {useConfettiStore} from "@/hooks/use-confetti-store";
 
-interface ChapterActionsProps {
+interface ActionsProps {
     disabled: boolean;
     courseId: string;
-    chapterId: string;
     isPublished: boolean;
 }
 
-export const ChapterActions = ({
+export const Actions = ({
     disabled,
     courseId,
-    chapterId,
     isPublished,
-}: ChapterActionsProps) => {
+}: ActionsProps) => {
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const confetti = useConfettiStore();
 
     const onClick = async () => {
         try {
             setIsLoading(true);
 
             if (isPublished) {
-                await axios.patch(`/api/courses/${courseId}/chapters/${chapterId}/unpublish`);
-                toast.success("Розділ знято з публікації.");
+                await axios.patch(`/api/courses/${courseId}/unpublish`);
+                toast.success("Курс знято з публікації.");
             } else {
-                await axios.patch(`/api/courses/${courseId}/chapters/${chapterId}/publish`);
-                toast.success("Розділ опубліковано.");
+                await axios.patch(`/api/courses/${courseId}/publish`);
+                toast.success("Курс опубліковано.");
+                confetti.onOpen();
             }
 
             router.refresh();
@@ -49,11 +50,11 @@ export const ChapterActions = ({
         try {
             setIsLoading(true);
 
-            await axios.delete(`/api/courses/${courseId}/chapters/${chapterId}`);
+            await axios.delete(`/api/courses/${courseId}`);
 
             toast.success("Дані видалено успішно.");
             router.refresh();
-            router.push(`/teacher/courses/${courseId}`);
+            router.push(`/teacher/courses`);
         } catch (e) {
             toast.error("На жаль, щось пішло не так. Спробуйте, будь ласка, ще раз.");
             console.error(e);

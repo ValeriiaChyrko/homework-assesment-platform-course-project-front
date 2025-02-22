@@ -11,6 +11,88 @@ const mux = new Mux({
 
 const { video } = mux;
 
+export async function DELETE(
+    req: Request,
+    { params }: { params: { courseId: string; chapterId: string } }
+) {
+    try {
+        const { userId } = await auth();
+        const { courseId, chapterId } = params;
+
+        if (!userId) {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
+
+        const courseOwner = await db.course.findUnique({
+            where: {
+                id: courseId,
+                userId: userId
+            }
+        });
+
+        if (!courseOwner) {
+            return new NextResponse("Unauthorized", { status: 401 });
+        }
+
+        const chapter = await db.chapter.findUnique({
+            where: {
+                id: chapterId,
+                courseId: courseId,
+            }
+        });
+
+        if (!chapter) {
+            return new NextResponse("Not Found", { status: 404 });
+        }
+
+        if (chapter.videoUrl) {
+            const existingMuxData = await db.muxData.findFirst({
+                where: {
+                    chapterId: chapterId
+                }
+            });
+
+            if (existingMuxData) {
+                await video.assets.delete(existingMuxData.assetId);
+                await db.muxData.delete({
+                    where: {
+                        id: existingMuxData.id,
+                    }
+                });
+            }
+        }
+
+        const deletedChapter = await db.chapter.delete({
+            where: {
+                id: chapterId,
+            }
+        });
+
+        const publishedChaptersInCourse = await db.chapter.findMany({
+            where: {
+                courseId: courseId,
+                isPublished: true
+            }
+        });
+
+        if (!publishedChaptersInCourse.length) {
+            await db.course.update({
+                where: {
+                    id: courseId,
+                },
+                data: {
+                    isPublished: false,
+                }
+            });
+        }
+
+        return NextResponse.json(deletedChapter);
+    } catch (e) {
+        console.error("[COURSES_CHAPTER_ID_DELETE]", e);
+        return new NextResponse("Internal Server Error", { status: 500 });
+    }
+}
+
 export async function PATCH(
     req: Request,
     { params }: { params: { courseId: string; chapterId: string } }
