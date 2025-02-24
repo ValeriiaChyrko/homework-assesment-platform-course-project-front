@@ -28,6 +28,7 @@ model Course {
 
   chapters Chapter[]
   attachments Attachment[]
+  enrollments Enrollment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -100,4 +101,18 @@ model UserProgress {
 
   @@index([chapterId])
   @@unique([userId, chapterId])
+}
+
+model Enrollment {
+  id String @id @default(uuid())
+  userId String
+
+  courseId String
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId])
+  @@unique([userId, courseId])
 }

@@ -3,16 +3,14 @@
 import {Category} from "@prisma/client";
 
 import {
-    FcWorkflow,
+    FcCommandLine,
     FcGlobe,
     FcSmartphoneTablet,
-    FcElectronics,
+    FcSelfie,
     FcDataConfiguration,
     FcMindMap,
-    FcLock,
+    FcDataProtection,
     FcProcess,
-    FcEngineering,
-    FcFactory,
     FcParallelTasks
 } from "react-icons/fc";
 import {IconType} from "react-icons";
@@ -23,16 +21,14 @@ interface CategorisProps {
 }
 
 const iconMap: Record<Category["name"], IconType> = {
-    "Розробка програмного забезпечення": FcWorkflow,
+    "Розробка програмного забезпечення": FcCommandLine,
     "Розробка веб-додатків": FcGlobe,
     "Мобільна розробка": FcSmartphoneTablet,
-    "Розробка ігор": FcElectronics,
+    "Розробка ігор": FcSelfie,
     "Наука про дані": FcDataConfiguration,
     "Машинне навчання": FcMindMap,
-    "Кібербезпека": FcLock,
+    "Кібербезпека": FcDataProtection,
     "DevOps": FcProcess,
-    "Вбудовані системи": FcEngineering,
-    "Хмарні обчислення": FcFactory,
     "Архітектура програмного забезпечення": FcParallelTasks
 };
 
@@ -40,7 +36,7 @@ export const Categories = ({
     items,
 }: CategorisProps) => {
     return (
-        <div className="flex items-center gap-x-2 overflow-x-auto pb-2">
+        <div className="flex items-center gap-x-2 overflow-x-auto pb-2 scroll-container">
             {items.map((category) => (
                 <CategoryItem
                     key={category.id}

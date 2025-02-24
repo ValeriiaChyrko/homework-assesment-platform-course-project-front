@@ -28,9 +28,10 @@ const SearchPage = async ({
         }
     });
 
+    const params = await searchParams;
     const courses = await getCourses({
         userId: userId,
-        ...searchParams
+        ...params
     });
 
     return (
