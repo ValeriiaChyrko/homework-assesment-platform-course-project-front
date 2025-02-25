@@ -3,63 +3,54 @@ import {redirect} from "next/navigation";
 import {db} from "@/lib/db";
 import Link from "next/link";
 import {
-    ArrowLeft,
-    Eye,
-    LaptopMinimalCheck,
+    ArrowLeft, CalendarClock,
+    Github,
     LayoutDashboard,
-    Video
+    Presentation
 } from "lucide-react";
-import {IconBadge} from "@/components/icon-badge";
-import ChapterTitleForm
-    from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/chapters/[chapterId]/_components/chapter-title-form";
-import ChapterDescriptionForm
-    from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/chapters/[chapterId]/_components/chapter-description-form";
-import ChapterAccessForm
-    from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/chapters/[chapterId]/_components/chapter-access-form";
-import ChapterVideoForm
-    from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/chapters/[chapterId]/_components/chapter-video-form";
 import {Banner} from "@/components/banner";
+import {IconBadge} from "@/components/icon-badge";
+import AssignmentTitleForm from "./_components/assignment-title-form";
+import AssignmentDescriptionForm from "./_components/assignment-description-form";
+import AssignmentGithubRepoUrlForm from "./_components/assignment-github-repo-url-form";
+import AssignmentDeadlineForm
+    from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/chapters/[chapterId]/assignments/[assignmentId]/_components/assignment-deadline-form";
+import AssignmentTestCriteriaForm from "./_components/assignment-test-criteria-form";
 import {
-    ChapterActions
-} from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/chapters/[chapterId]/_components/chapter-actions";
-import AssignmentsForm
-    from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/chapters/[chapterId]/_components/assignments-form";
+    AssignmentActions
+} from "@/app/(dashboard)/(routes)/teacher/courses/[courseId]/chapters/[chapterId]/assignments/[assignmentId]/_components/assignment-actions";
 
-const ChapterIdPage = async ({
-    params
+const AssignmentIdPage = async ({
+params
 }: {
-    params: { courseId: string; chapterId: string }
+    params: { courseId: string; chapterId: string; assignmentId: string }
 }) => {
     const {userId} = await auth();
-    const {courseId, chapterId} = await params;
+    const {courseId, chapterId, assignmentId} = await params;
 
     if(!userId) {
         return redirect(`/`);
     }
 
-    const chapter = await db.chapter.findUnique({
+    const assignment = await db.assignment.findUnique({
         where: {
-            id: chapterId,
-            courseId: courseId
-        },
-        include: {
-            muxData: true,
-            assignments: {
-                orderBy: {
-                    position: "asc",
-                }
-            }
+            id: assignmentId,
+            chapterId: chapterId
         }
     });
 
-    if (!chapter) {
+    if (!assignment) {
         return redirect("/");
     }
 
     const requiredFields = [
-        chapter.title,
-        chapter.description,
-        chapter.assignments.some(assignment => assignment.isPublished)
+        assignment.title,
+        assignment.description,
+        assignment.repositoryName,
+        assignment.repositoryOwner,
+        assignment.deadline,
+        assignment.maxScore,
+        assignment.maxAttemptsAmount
     ];
 
     const totalFields = requiredFields.length;
@@ -71,36 +62,37 @@ const ChapterIdPage = async ({
 
     return (
         <>
-            {!chapter.isPublished && (
+            {!assignment.isPublished && (
                 <Banner
                     variant="warning"
-                    label="Цей розділ ще не опублікований. Він не буде відображатися в курсі."
+                    label="Цей завдання ще не опубліковано. Воно не буде відображатися в розділі."
                 />
             )}
             <div className="p-6">
                 <div className="flex items-center justify-between">
                     <div className="w-full">
                         <Link
-                            href={`/teacher/courses/${courseId}`}
+                            href={`/teacher/courses/${courseId}/chapters/${chapterId}`}
                             className="flex items-center text-sm hover:opacity-75 transition mb-6"
                         >
                             <ArrowLeft className="h-4 w-4 mr-2" />
-                            Повернутись до налаштувань курсу
+                            Повернутись до налаштувань розділу
                         </Link>
                         <div className="flex items-center justify-between w-full">
                             <div className="flex flex-col gap-y-2">
                                 <h1 className="text-2xl font-medium">
-                                    Налаштування розділу курсу
+                                    Налаштування завдання розділу
                                 </h1>
                                 <span className="text-sm text-slate-700">
                                     Завершіть заповнення всіх полів {completionText}
                                 </span>
                             </div>
-                            <ChapterActions
+                            <AssignmentActions
                                 disabled={!isComplete}
                                 courseId={courseId}
                                 chapterId={chapterId}
-                                isPublished={chapter.isPublished}
+                                assignmentId={assignmentId}
+                                isPublished={assignment.isPublished}
                             />
                         </div>
                     </div>
@@ -111,60 +103,67 @@ const ChapterIdPage = async ({
                             <div className="flex items-center gap-x-2">
                                 <IconBadge icon={LayoutDashboard} />
                                 <h2 className="text-xl">
-                                    Персоналізуйте свій розділ
+                                    Персоналізуйте своє завдання
                                 </h2>
                             </div>
-                            <ChapterTitleForm
-                                initialData={chapter}
+                            <AssignmentTitleForm
+                                initialData={assignment}
                                 courseId={courseId}
                                 chapterId={chapterId}
+                                assignmentId={assignmentId}
                             />
-                            <ChapterDescriptionForm
-                                initialData={chapter}
+                            <AssignmentDescriptionForm
+                                initialData={assignment}
                                 courseId={courseId}
                                 chapterId={chapterId}
+                                assignmentId={assignmentId}
                             />
                         </div>
                         <div>
                             <div className="flex items-center gap-x-2">
-                                <IconBadge icon={Eye} />
+                                <IconBadge icon={Github} />
                                 <h2 className="text-xl">
-                                    Налаштування доступу
+                                    Налаштування GitHub
                                 </h2>
                             </div>
-                            <ChapterAccessForm
-                                initialData={chapter}
+                            <AssignmentGithubRepoUrlForm
+                                initialData={assignment}
                                 courseId={courseId}
                                 chapterId={chapterId}
+                                assignmentId={assignmentId}
                             />
                         </div>
                     </div>
                     <div className="space-y-6">
                         <div>
                             <div className="flex items-center gap-x-2">
-                                <IconBadge icon={Video} />
+                                <IconBadge icon={CalendarClock} />
                                 <h2 className="text-xl">
-                                    Мультимедійні матеріали
+                                    Термін здачі
                                 </h2>
                             </div>
-                            <ChapterVideoForm
-                                initialData={chapter}
+                            <AssignmentDeadlineForm
+                                initialData={assignment}
                                 courseId={courseId}
                                 chapterId={chapterId}
+                                assignmentId={assignmentId}
                             />
                         </div>
                         <div>
-                            <div className="flex items-center gap-x-2">
-                                <IconBadge icon={LaptopMinimalCheck}/>
-                                <h2 className="text-xl">
-                                    Завдання для самостійної роботи
-                                </h2>
+                            <div>
+                                <div className="flex items-center gap-x-2">
+                                    <IconBadge icon={Presentation} />
+                                    <h2 className="text-xl">
+                                        Управління балами та спробами
+                                    </h2>
+                                </div>
+                                <AssignmentTestCriteriaForm
+                                    initialData={assignment}
+                                    courseId={courseId}
+                                    chapterId={chapterId}
+                                    assignmentId={assignmentId}
+                                />
                             </div>
-                            <AssignmentsForm
-                                initialData={chapter}
-                                courseId={courseId}
-                                chapterId={chapterId}
-                            />
                         </div>
                     </div>
                 </div>
@@ -173,4 +172,4 @@ const ChapterIdPage = async ({
     )
 }
 
-export default ChapterIdPage;
+export default AssignmentIdPage;

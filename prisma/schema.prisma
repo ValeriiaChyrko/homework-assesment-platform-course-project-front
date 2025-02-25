@@ -71,11 +71,49 @@ model Chapter {
   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   userProgress UserProgress[]
+  assignments Assignment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([courseId])
+}
+
+model Assignment {
+  id String @id @default(uuid())
+  title String
+  description String? @db.Text
+  repositoryName String? @db.Text
+  repositoryOwner String? @db.Text
+  repositoryUrl String? @db.Text
+  deadline DateTime @default(now())
+
+  maxScore Int @default(100)
+  maxAttemptsAmount Int @default(5)
+
+  position Int
+  isPublished Boolean @default(false)
+
+  attemptCompilationSectionEnable Boolean @default(false)
+  attemptTestsSectionEnable Boolean @default(false)
+  attemptQualitySectionEnable Boolean @default(false)
+
+  attemptCompilationMaxScore Int @default(5)
+  attemptCompilationMinScore Int @default(0)
+
+  attemptTestsMaxScore Int @default(65)
+  attemptTestsMinScore Int @default(0)
+
+  attemptQualityMaxScore Int @default(30)
+  attemptQualityMinScore Int @default(0)
+
+  chapterId String
+  chapter Chapter @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([chapterId])
 }
 
 model MuxData {
